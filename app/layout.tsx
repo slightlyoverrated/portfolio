@@ -13,8 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://ishan-university-portfolio.yhcozi.chatgpt.site'),
   title: 'Ishan — Student, Programmer, Builder',
   description: 'An interactive university application portfolio about the projects, interests, and ambitions of Ishan.',
+  alternates: { canonical: '/' },
   openGraph: {
     title: 'Hi, I’m Ishan.',
     description: 'Student · Programmer · Builder · Future Engineer',
