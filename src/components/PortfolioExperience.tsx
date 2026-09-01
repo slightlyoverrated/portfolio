@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
 import {
   ArrowDown,
   ArrowUpRight,
@@ -64,6 +63,10 @@ const sections = [
 ] as const;
 
 const flowIcons = [ShoppingBag, Link2, CircleUserRound, ReceiptText, Truck];
+
+function assetUrl(path: string) {
+  return `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+}
 
 function WindowBar({ title, dark = false }: { title: string; dark?: boolean }) {
   return (
@@ -198,7 +201,15 @@ export function PortfolioExperience() {
           {portfolio.universities.map((university, index) => (
             <figure className={`destination-card destination-${index + 1}`} key={university.short}>
               <div className="destination-photo">
-                <Image src={university.image} alt={university.alt} fill sizes="(max-width: 560px) 58vw, (max-width: 900px) 47vw, 336px" priority={index === 0} />
+                {/* Static Vite output serves these local files directly; no runtime image service is available or needed. */}
+                {/* oxlint-disable-next-line next/no-img-element */}
+                <img
+                  src={assetUrl(university.image)}
+                  alt={university.alt}
+                  sizes="(max-width: 560px) 58vw, (max-width: 900px) 47vw, 336px"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
                 <span>ASPIRATION · NOT AFFILIATION</span>
               </div>
               <figcaption>
