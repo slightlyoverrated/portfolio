@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "start": "vite preview",
     "check": "tsc --noEmit && oxlint src",
+    "verify": "node --test scripts/verify-static.mjs",
     "lint": "oxlint src",
     "format": "oxfmt"
   },
