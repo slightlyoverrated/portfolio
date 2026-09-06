@@ -17,11 +17,10 @@ export const portfolio = {
     location: 'Thailand',
     stage: 'Year 13',
     school: 'International-school student',
-    role: 'Student · Programmer · Builder',
+    role: 'Student · Programmer',
     intro:
-      'I build software, experiment with engineering, and spend an unreasonable amount of time wondering how systems work.',
-    direction:
-      'Working toward a future in computer engineering, AI and robotics.',
+      'I like building software, figuring out why systems behave the way they do, and occasionally making projects much larger than they needed to be.',
+    direction: 'Interested in Computer Engineering, AI and Robotics.',
   },
   academics: {
     subjects: [
@@ -87,36 +86,37 @@ export const portfolio = {
   projects: {
     orderflow: {
       name: 'OrderFlow',
-      descriptor: 'Commerce / full-system experiment',
-      summary: 'From a product link to a fulfilled order.',
+      descriptor: 'Order management for Thai sellers',
+      summary: 'Products, checkout and fulfilment.',
       intro:
-        'A storefront-first commerce and order-management platform for Thai small sellers and businesses.',
+        'I built OrderFlow to see how a product link could lead to a structured order, with the catalogue, stock and fulfilment in the same system.',
+      evidence: {
+        image: '',
+        alt: 'OrderFlow checkout and seller order view',
+        caption: 'Checkout → seller’s order record',
+        description:
+          'The two views that show how a customer’s purchase reaches the seller.',
+        process: '',
+      },
       caseStudy: [
         {
           label: 'Problem',
-          text: 'A seller needs more than a product page: stock, customer checkout and incoming orders need to stay connected.',
+          text: 'A product page is only one part of selling. I also needed to account for variants, available stock, checkout and the seller’s next steps.',
         },
         {
           label: 'What I built',
-          text: 'A connected workflow for products, variants, SKUs, pricing and stock; shareable storefront links; checkout; orders and fulfilment; invoices and receipts; analytics and subscriptions, with Thai/English support and responsive layouts.',
+          text: 'Product and variant records, SKUs, prices and stock; shareable storefront links; checkout and order fulfilment. I also added invoices, receipts, analytics, subscriptions and Thai/English layouts.',
         },
         {
           label: 'Technical challenge',
-          text: 'Thinking through how product, inventory and order data relate, while connecting authentication, database-backed interfaces and deployment. A change in one part of the workflow has consequences elsewhere.',
+          text: 'The difficult part was connecting product, inventory and order data. Authentication, database queries and the interface all had to fit the same workflow.',
         },
         {
           label: 'What I learned',
-          text: 'A feature is only useful when it fits the whole journey. Building the complete loop pushed me to think about data consistency, edge cases and what a seller needs to see next.',
+          text: 'I had to think past individual screens: what information the next step needs, and whether the seller can tell what to do with an order.',
         },
       ],
-      technology: [
-        'Next.js',
-        'Supabase',
-        'Databases',
-        'Authentication',
-        'Cloudflare',
-        'Responsive UI',
-      ],
+      technology: ['Next.js', 'Supabase', 'Cloudflare'],
       stages: [
         {
           name: 'Seller',
@@ -167,26 +167,34 @@ export const portfolio = {
     },
     krung: {
       name: 'KRUNG',
-      descriptor: 'Information / research / Thailand',
-      summary: 'A story is more than a headline.',
+      descriptor: 'News and research · Thailand',
+      summary: 'Following a story beyond the headline.',
       intro:
-        'A Thailand-focused news and research product exploring context, sources and the connections between events.',
+        'With KRUNG, I wanted a way to follow news in Thailand without losing the sources, people and earlier events behind each story.',
+      evidence: {
+        image: '',
+        alt: 'KRUNG storyline with its sources and related events',
+        caption: 'A storyline and its source material',
+        description:
+          'A real story page will show how summaries, sources and related events sit together.',
+        process: '',
+      },
       caseStudy: [
         {
           label: 'Problem',
-          text: 'A stream of headlines can tell you what happened while leaving you without the context to understand it.',
+          text: 'Reading one headline rarely explains how a story started or who is involved. I wanted the background within reach of the summary.',
         },
         {
           label: 'Approach',
-          text: 'Organise concise information around storylines, sources, people and related events, with a Bangkok and Thailand focus.',
+          text: 'I organised summaries around storylines, with links to sources, people and related events. The focus is Bangkok and Thailand.',
         },
         {
           label: 'System',
-          text: 'An interface connecting summaries, source material, people and research collections. Frontend architecture, data handling and information architecture all shape how the story is explored.',
+          text: 'The main design problem was deciding what belongs on a story page and what belongs in a research collection. The map above shows those content relationships.',
         },
         {
           label: 'Lessons',
-          text: 'Trust has to be supported by the interface. Sources should be easy to inspect, and adding more information is only helpful when its relationships are clear.',
+          text: 'I learned to make sources easy to inspect. Adding context does not help if the reader cannot see how it relates to the story.',
         },
       ],
       technology: [
@@ -224,7 +232,7 @@ export const portfolio = {
       summary:
         'An experiment with reminders, audio interaction, quick application launching and custom interface design.',
       lesson:
-        'A smaller space to explore how a useful interface connects to everyday desktop actions.',
+        'I used it to practise connecting a Python interface to actions on the desktop.',
       technology: ['Python', 'Desktop UI', 'Audio interaction'],
     },
     hardware: {
@@ -233,29 +241,29 @@ export const portfolio = {
       summary:
         'Exploring the connection between code, electronics and physical behaviour.',
       lesson:
-        'An introduction to the questions that draw me toward robotics and hardware/software integration.',
+        'These are early experiments. Photographs, circuit details and build notes still need to be added.',
       technology: ['Arduino', 'Electronics', 'Robotics experimentation'],
     },
   },
   timeline: [
     {
       title: 'Started with Python',
-      body: 'Programming problems became a way to practise breaking a question into smaller steps.',
+      body: 'Small programming problems helped me practise breaking a task into steps.',
       tag: 'BEGINNINGS',
     },
     {
-      title: 'Developed through Computer Science',
-      body: 'Coding competitions and school study helped turn experimentation into more structured problem solving.',
+      title: 'School Computer Science',
+      body: 'Coursework and coding competitions gave me more problems to work through.',
       tag: 'FOUNDATIONS',
     },
     {
       title: 'Connected code to hardware',
-      body: 'Arduino and electronics experiments opened up questions about physical systems and control.',
+      body: 'I began experimenting with Arduino and electronics alongside software.',
       tag: 'EXPLORATION',
     },
     {
       title: 'Built beyond the classroom',
-      body: 'KRUNG, OrderFlow and Mitra expanded the work into interfaces, data and deployment.',
+      body: 'KRUNG, OrderFlow and Mitra meant working with interfaces, data and deployment.',
       tag: 'INDEPENDENT WORK',
     },
     {
@@ -274,7 +282,7 @@ export const portfolio = {
       type: 'Coding certificates',
       title: '7+ Perse Python certificates',
       detail:
-        'Perse Python Coding Competition certificates; a record of competitive problem solving.',
+        'Certificates from the Perse Python Coding Competition. Copies to be added.',
     },
     {
       type: 'Invitation',
@@ -283,7 +291,7 @@ export const portfolio = {
     },
     {
       type: 'Independent experience',
-      title: 'Building complete systems',
+      title: 'Independent software projects',
       detail:
         'Work on OrderFlow, KRUNG and Mitra, from interface decisions to debugging and deployment.',
     },
@@ -340,21 +348,26 @@ export const portfolio = {
       ],
     },
   ],
+  activityPhoto: {
+    image: '',
+    alt: '',
+    caption: 'School / Ror Dor · photograph and date pending',
+  },
   activities: [
     {
       title: 'School life',
       theme: 'COMMUNICATION',
-      text: 'School activities and an interest in student voice and digital communication bring another dimension to my technical interests.',
+      text: 'I’m interested in student voice and digital communication at school. Specific activities and photographs will be added here.',
     },
     {
       title: 'Ror Dor',
       theme: 'DISCIPLINE',
-      text: 'Thai Reserve Officer Training Corps: a part of life outside the screen, with a different emphasis on responsibility and discipline.',
+      text: 'Thai Reserve Officer Training Corps training is part of my life outside school and programming.',
     },
     {
       title: 'Learning with others',
       theme: 'TEAMWORK',
-      text: 'I want to become better at explaining ideas, listening to different approaches and contributing to work beyond my own projects.',
+      text: 'I want more practice explaining my decisions and working on projects with other people.',
     },
   ],
   community: [
@@ -379,10 +392,10 @@ export const portfolio = {
       placeholder: true,
     },
     {
-      title: 'A record in progress',
+      title: 'Activity reflection',
       organization: '',
       date: '',
-      description: 'A space for the people and experiences behind the work.',
+      description: 'Date, role and a short reflection to be added.',
       image: '',
       role: '',
       impact: '',
@@ -390,13 +403,13 @@ export const portfolio = {
     },
   ] as CommunityEntry[],
   outside: {
-    title: 'Still curious, even AFK.',
-    text: 'Small electronics experiments. School life. An idea for something useful that probably needs another revision. My interests tend to follow me away from the keyboard.',
+    title: 'Away from the keyboard',
+    text: 'Electronics experiments, school activities and Ror Dor take up some of the time between programming and A Levels.',
     notes: ['MAKE SOMETHING', 'TAKE IT APART', 'ASK ANOTHER QUESTION'],
   },
   future: {
-    title: 'Different paths. One direction.',
-    text: 'I want to deepen the mathematical and engineering foundations behind my experiments, and learn to design more capable, thoughtful systems.',
+    title: 'What I want to study',
+    text: 'Computer Engineering is my main interest. I want to understand the mathematics, electronics and computing behind AI and robotics, then use them in projects I cannot build yet.',
     paths: ['AI', 'Robotics', 'Secure systems', 'Software'],
     destination: 'Computer Engineering',
   },

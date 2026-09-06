@@ -37,27 +37,6 @@ export function usePortfolioMotion({ root, reduced }: MotionRefs) {
           },
         );
       });
-      gsap.to('.hero-schematic', {
-        y: -28,
-        rotation: 1,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.6,
-        },
-      });
-      gsap.to('.signal-dot', {
-        cy: 94,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true,
-        },
-      });
       // A single reversible caret follows the document without adding scroll distance.
       const words = Array.from(
         element.querySelectorAll<HTMLElement>('.statement-word'),
@@ -131,41 +110,6 @@ export function usePortfolioMotion({ root, reduced }: MotionRefs) {
           },
         },
       });
-      gsap.from('.order-interface', {
-        y: 18,
-        rotate: -1,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.order-demo',
-          start: 'top 85%',
-          end: 'center 60%',
-          scrub: 0.5,
-        },
-      });
-      gsap.utils.toArray<HTMLElement>('.community-frame').forEach((photo, i) =>
-        gsap.from(photo, {
-          y: 25,
-          rotation: i % 2 ? 4 : -4,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: photo,
-            start: 'top 95%',
-            end: 'top 65%',
-            scrub: 0.6,
-          },
-        }),
-      );
-      gsap.from('.build-word', {
-        scale: 0.92,
-        letterSpacing: '-.03em',
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.build-word',
-          start: 'top 90%',
-          end: 'center 65%',
-          scrub: 0.5,
-        },
-      });
       media.add('(min-width: 951px) and (min-height: 700px)', () => {
         ScrollTrigger.create({
           trigger: '.statement-layout',
@@ -177,6 +121,7 @@ export function usePortfolioMotion({ root, reduced }: MotionRefs) {
       });
     }, element);
     const refresh = () => ScrollTrigger.refresh();
+    window.addEventListener('portfolio:layout', refresh);
     const images = Array.from(element.querySelectorAll('img'));
     images.forEach((img) => img.addEventListener('load', refresh));
     void document.fonts.ready.then(() => {
@@ -188,6 +133,7 @@ export function usePortfolioMotion({ root, reduced }: MotionRefs) {
       lenis.destroy();
       gsap.ticker.remove(drive);
       images.forEach((img) => img.removeEventListener('load', refresh));
+      window.removeEventListener('portfolio:layout', refresh);
       element
         .querySelectorAll('.is-current,.is-active')
         .forEach((node) => node.classList.remove('is-current', 'is-active'));

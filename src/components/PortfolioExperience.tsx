@@ -15,11 +15,8 @@ import { usePortfolioMotion } from '@/src/hooks/usePortfolioMotion';
 import { useReducedMotion } from '@/src/hooks/useReducedMotion';
 import {
   FutureDiagram,
-  HeroSchematic,
   KrungDiagram,
   OrderFlowDiagram,
-  StatementMotif,
-  SubjectDiagram,
 } from './EngineeringDiagrams';
 
 const sections = [
@@ -57,15 +54,6 @@ const statementWords = portfolio.personalStatement
   .join(' ')
   .split(/\s+/).length;
 
-function Index({ number, label }: { number: string; label: string }) {
-  return (
-    <p className="section-index mono">
-      <span>{number}</span>
-      <i />
-      {label}
-    </p>
-  );
-}
 function SkillItem({ name, evidence }: { name: string; evidence: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -127,43 +115,18 @@ function Academics() {
       aria-labelledby="academics-title"
       tabIndex={-1}
     >
-      <div className="section-heading">
-        <div>
-          <Index number="01" label="CURRENT TRAJECTORY" />
-          <h2 id="academics-title">
-            Academic <em>profile.</em>
-          </h2>
-        </div>
-        <p>
-          {portfolio.person.stage} · A Levels
-          <br />
-          {portfolio.person.school} in {portfolio.person.location}
-        </p>
+      <div className="record-title">
+        <h2 id="academics-title">Academic record</h2>
+        <p>{portfolio.person.stage} · A Levels · Thailand</p>
       </div>
-      <div className="subjects">
-        {data.subjects.map((s) => (
-          <article className="subject" key={s.name}>
-            <span className="mono">{s.code}</span>
-            <SubjectDiagram kind={s.diagram} />
-            <h3>{s.name}</h3>
-            <p>{s.description}</p>
-            <span className="subject-connection">
-              <i />
-              {s.connection}
-            </span>
-          </article>
-        ))}
-      </div>
-      <div className="academic-convergence">
-        <span className="mono">THREE WAYS OF THINKING</span>
-        <span className="convergence-line" />
-        <span>{data.destinations.join(' / ')}</span>
-      </div>
+      <p className="current-subjects">
+        Mathematics · Physics · Computer Science
+      </p>
       <div className="academic-record">
         <div className="igcse-record">
           <div className="record-heading">
             <h3>IGCSE results</h3>
-            <span className="mono">{data.igcse.length} SUBJECTS</span>
+            <span className="mono">{data.igcse.length} subjects</span>
           </div>
           <dl className="grades">
             {data.igcse.map((r) => (
@@ -177,7 +140,7 @@ function Academics() {
         <div className="as-record">
           <div className="record-heading">
             <h3>AS record</h3>
-            <span className="mono">FIRST SITTING</span>
+            <span className="mono">First sitting</span>
           </div>
           <dl className="grades">
             {data.aLevels.map((r) => (
@@ -188,13 +151,13 @@ function Academics() {
             ))}
           </dl>
           <div className="trajectory-note">
-            <span className="mono">ACADEMIC TRAJECTORY</span>
+            <span className="mono">Retake note</span>
             <p>{data.trajectory}</p>
           </div>
         </div>
         <div className="exam-record">
           <div>
-            <span className="mono">SAT / CONFIRMED</span>
+            <span className="mono">SAT</span>
             <strong>
               {data.exams.sat.total}
               <small>/ 1600</small>
@@ -211,17 +174,6 @@ function Academics() {
           </div>
         </div>
       </div>
-      <ol className="academic-path">
-        {data.path.map((p, i) => (
-          <li key={p} className={i === 2 ? 'current' : ''}>
-            <span>
-              {i < 2 ? <Check size={12} /> : String(i + 1).padStart(2, '0')}
-            </span>
-            {p}
-            {i === 2 && <small>NOW</small>}
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }
@@ -237,27 +189,20 @@ function Statement({ staticMode }: { staticMode: boolean }) {
     >
       <div className="statement-layout">
         <div className="statement-heading">
-          <Index number="02" label="THE QUESTION BEHIND THE WORK" />
           <h2 id="statement-title">
             Why
             <br />
             <em>engineering?</em>
           </h2>
-          <p>
-            From getting things to work,
-            <br />
-            to understanding why they do.
-          </p>
-          <StatementMotif />
           <span className="mono statement-length">
-            PERSONAL STATEMENT / {statementWords} WORDS
+            Personal statement · {statementWords} words
           </span>
         </div>
         <article className="statement-paper">
           <div className="paper-toolbar">
             <span>
               <FileText size={16} />
-              why_engineering.md
+              Personal statement
             </span>
             <button
               type="button"
@@ -289,12 +234,8 @@ function Statement({ staticMode }: { staticMode: boolean }) {
             ))}
           </div>
           <div className="paper-footer mono">
-            <span>
-              {staticMode || full
-                ? 'FULL TEXT'
-                : 'SCROLL TO FOLLOW THE THOUGHT'}
-            </span>
-            <span>ISHAN DUBEY / PERSONAL STATEMENT</span>
+            <span>{staticMode || full ? 'Full text' : 'Scroll to read'}</span>
+            <span>Ishan Dubey</span>
           </div>
         </article>
       </div>
@@ -312,15 +253,10 @@ function Projects() {
     >
       <div className="section-heading">
         <div>
-          <Index number="03" label="IDEAS → WORKING SYSTEMS" />
-          <h2 id="projects-title">
-            Selected <em>work.</em>
-          </h2>
+          <h2 id="projects-title">Projects</h2>
         </div>
         <p>
-          Ideas I tried turning
-          <br />
-          into real systems.
+          Two web projects, a desktop assistant and some hardware experiments.
         </p>
       </div>
       {(['orderflow', 'krung'] as const).map((key, i) => {
@@ -353,23 +289,47 @@ function Projects() {
               </div>
               <p>{project.intro}</p>
             </div>
+            <figure className="project-evidence">
+              {project.evidence.image ? (
+                <img
+                  src={assetUrl(project.evidence.image)}
+                  alt={project.evidence.alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div className="evidence-placeholder">
+                  <FileText size={23} aria-hidden="true" />
+                  <span>Screenshot not added yet</span>
+                </div>
+              )}
+              <figcaption>
+                <strong>{project.evidence.caption}</strong>
+                <p>{project.evidence.description}</p>
+              </figcaption>
+            </figure>
             {key === 'orderflow' ? <OrderFlowDiagram /> : <KrungDiagram />}
             <div className="case-notes">
-              {project.caseStudy.map((c, index) => (
+              {project.caseStudy.map((c) => (
                 <div key={c.label}>
-                  <span className="mono">
-                    0{index + 1} / {c.label}
-                  </span>
+                  <span className="mono">{c.label}</span>
                   <p>{c.text}</p>
                 </div>
               ))}
             </div>
             <div className="project-tools">
-              <span className="mono">WORKED WITH</span>
+              <span className="mono">
+                {key === 'orderflow' ? 'Tools used' : 'Work involved'}
+              </span>
               {project.technology.map((t) => (
                 <span key={t}>{t}</span>
               ))}
             </div>
+            <p className="missing-process">
+              <strong>Development record</strong> ·{' '}
+              {project.evidence.process ||
+                'Bug notes, earlier versions and code excerpts not added yet.'}
+            </p>
           </article>
         );
       })}
@@ -379,10 +339,7 @@ function Projects() {
             <span className="mono">
               0{i + 3} / {p.descriptor}
             </span>
-            <h3>
-              {p.name}
-              <span aria-hidden="true">↗</span>
-            </h3>
+            <h3>{p.name}</h3>
             <p>{p.summary}</p>
             <p className="project-lesson">{p.lesson}</p>
             <div className="mini-tools">{p.technology.join(' · ')}</div>
@@ -403,14 +360,9 @@ function Community() {
     >
       <div className="section-heading">
         <div>
-          <Index number="08" label="PEOPLE & CONTRIBUTION" />
-          <h2 id="community-title">
-            A little beyond <em>myself.</em>
-          </h2>
+          <h2 id="community-title">Community service</h2>
         </div>
         <p>
-          Community service
-          <br />
           <span className="pending-note">
             Photographs and details to follow.
           </span>
@@ -419,7 +371,6 @@ function Community() {
       <div className="community-board">
         {communityItems.map((item, i) => (
           <figure className="community-frame" key={item.title}>
-            <span className="photo-tape" aria-hidden="true" />
             {item.photo ? (
               <img
                 src={item.photo.url}
@@ -433,15 +384,17 @@ function Community() {
               />
             ) : (
               <div className="photo-placeholder">
-                <span className="frame-cross">+</span>
+                <span className="frame-cross" aria-hidden="true">
+                  —
+                </span>
                 <span className="mono">{item.title}</span>
-                <span className="placeholder-index mono">FRAME 0{i + 1}</span>
+                <span className="placeholder-index mono">Photo 0{i + 1}</span>
               </div>
             )}
             <figcaption>
               <span className="mono">
                 {item.placeholder
-                  ? 'PLACEHOLDER / DETAILS PENDING'
+                  ? 'Date and activity details pending'
                   : item.date || item.organization}
               </span>
               <h3>{item.title}</h3>
@@ -610,16 +563,8 @@ export function PortfolioExperience() {
         aria-labelledby="hero-title"
         tabIndex={-1}
       >
-        <div className="hero-topline mono">
-          <span>PERSONAL PORTFOLIO / ENGINEERING & COMPUTING</span>
-          <span>
-            <i className="status-dot" />
-            {portfolio.person.stage} · {portfolio.person.location}
-          </span>
-        </div>
         <div className="hero-main">
           <div className="hero-copy">
-            <p className="hero-pretitle">Curiosity, put to work.</p>
             <h1 id="hero-title">
               <span>{portfolio.person.firstName}</span>
               <span>
@@ -627,10 +572,11 @@ export function PortfolioExperience() {
                 <i>.</i>
               </span>
             </h1>
-            <p className="hero-role">{portfolio.person.role}</p>
-            <p className="hero-mobile-subjects">
+            <p className="hero-role">Year 13 student in Thailand</p>
+            <p className="hero-subjects">
               {portfolio.academics.subjects.map((s) => s.name).join(' · ')}
             </p>
+            <p className="hero-direction">{portfolio.person.direction}</p>
             <p className="hero-intro">{portfolio.person.intro}</p>
             <div className="hero-ctas">
               <a className="primary-link" href="#projects">
@@ -643,17 +589,6 @@ export function PortfolioExperience() {
               </a>
             </div>
           </div>
-          <HeroSchematic />
-        </div>
-        <div className="hero-bottom">
-          <div>
-            <span className="mono">CURRENTLY STUDYING</span>
-            <p>{portfolio.academics.subjects.map((s) => s.name).join(' · ')}</p>
-          </div>
-          <p>{portfolio.person.direction}</p>
-          <a href="#academics" aria-label="Explore portfolio">
-            <ArrowDown />
-          </a>
         </div>
       </section>
       {quick && (
@@ -681,16 +616,10 @@ export function PortfolioExperience() {
         aria-labelledby="journey-title"
       >
         <div className="journey-heading">
-          <Index number="04" label="ACADEMIC & TECHNICAL JOURNEY" />
-          <h2 id="journey-title">
-            One question
-            <br />
-            leads to <em>another.</em>
-          </h2>
+          <h2 id="journey-title">How I got here</h2>
           <p>
-            From small programming problems
-            <br />
-            to the systems behind them.
+            I started with Python problems. The projects gradually needed more
+            than one file.
           </p>
           <a className="text-link" href="#academics">
             Current academic record
@@ -703,7 +632,7 @@ export function PortfolioExperience() {
               <span className="timeline-node">
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <span className="mono">{item.tag}</span>
+
               <h3>{item.title}</h3>
               <p>{item.body}</p>
             </li>
@@ -718,20 +647,8 @@ export function PortfolioExperience() {
       >
         <div className="section-heading">
           <div>
-            <Index number="05" label="EXPERIENCE & ACHIEVEMENTS" />
-            <h2 id="experience-title">
-              Practice. Progress.
-              <br />
-              <em>A few milestones.</em>
-            </h2>
+            <h2 id="experience-title">Experience &amp; achievements</h2>
           </div>
-          <span className="achievement-stamp" aria-hidden="true">
-            LEARN
-            <br />
-            BY
-            <br />
-            DOING ↗
-          </span>
         </div>
         <div className="achievement-list">
           {portfolio.achievements.map((a, i) => (
@@ -751,22 +668,14 @@ export function PortfolioExperience() {
       >
         <div className="section-heading">
           <div>
-            <Index number="06" label="THINGS I’VE WORKED WITH" />
-            <h2 id="toolkit-title">
-              Technical <em>toolkit.</em>
-            </h2>
+            <h2 id="toolkit-title">Things I actually use</h2>
           </div>
-          <p>
-            Tools become more interesting
-            <br />
-            when they connect to a project.
-          </p>
+          <p>Select a tool to see where I have used it.</p>
         </div>
         <div className="toolkit-layers">
           {portfolio.skills.map((group) => (
             <article key={group.group}>
               <div>
-                <span className="mono">{group.layer}</span>
                 <h3>{group.group}</h3>
               </div>
               <div className="skill-items">
@@ -777,9 +686,31 @@ export function PortfolioExperience() {
             </article>
           ))}
         </div>
-        <p className="toolkit-hint mono">
-          HOVER OR FOCUS A TOOL TO SEE WHERE IT CONNECTS.
-        </p>
+        <details
+          className="implementation-note"
+          onToggle={() => window.dispatchEvent(new Event('portfolio:layout'))}
+        >
+          <summary>Implementation note: motion in this portfolio</summary>
+          <p>
+            The scroll animations share one hook. Quick View, the pause button
+            and reduced-motion preferences all bypass it.
+          </p>
+          <pre>
+            <code>
+              {
+                'const element = root.current;\nif (!element || reduced) return;'
+              }
+            </code>
+          </pre>
+          <a
+            className="text-link"
+            href="https://github.com/slightlyoverrated/portfolio/blob/9e5592ce2c6885769daac6b149af56fccfe9796c/src/hooks/usePortfolioMotion.ts#L11-L13"
+            target="_blank"
+            rel="noreferrer"
+          >
+            View the source at commit 9e5592c <ArrowUpRight size={14} />
+          </a>
+        </details>
       </section>
       <section
         id="activities"
@@ -789,27 +720,29 @@ export function PortfolioExperience() {
       >
         <div className="section-heading">
           <div>
-            <Index number="07" label="ACTIVITIES & RESPONSIBILITY" />
-            <h2 id="activities-title">
-              Beyond <em>the IDE.</em>
-            </h2>
+            <h2 id="activities-title">Activities</h2>
           </div>
-          <p>
-            Some lessons need
-            <br />a different kind of classroom.
-          </p>
+          <p>School life and Ror Dor.</p>
         </div>
         <div className="activity-layout">
-          <div className="activity-typography" aria-hidden="true">
-            <span>show up.</span>
-            <span>listen.</span>
-            <span>contribute.</span>
-            <i>↗</i>
-          </div>
+          <figure className="activity-photo">
+            {portfolio.activityPhoto.image ? (
+              <img
+                src={assetUrl(portfolio.activityPhoto.image)}
+                alt={portfolio.activityPhoto.alt}
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <div className="photo-placeholder">
+                <span>Activity photograph to add</span>
+              </div>
+            )}
+            <figcaption>{portfolio.activityPhoto.caption}</figcaption>
+          </figure>
           <div className="activity-notes">
             {portfolio.activities.map((a) => (
               <article key={a.title}>
-                <span className="mono">{a.theme}</span>
                 <h3>{a.title}</h3>
                 <p>{a.text}</p>
               </article>
@@ -819,14 +752,8 @@ export function PortfolioExperience() {
       </section>
       <Community />
       <section className="outside section-pad" aria-labelledby="outside-title">
-        <span className="afk-label mono">09 / OUTSIDE THE SCREEN</span>
         <h2 id="outside-title">{portfolio.outside.title}</h2>
         <p>{portfolio.outside.text}</p>
-        <div className="outside-notes mono">
-          {portfolio.outside.notes.map((n) => (
-            <span key={n}>{n}</span>
-          ))}
-        </div>
       </section>
       <section
         id="future"
@@ -836,26 +763,14 @@ export function PortfolioExperience() {
       >
         <div className="section-heading">
           <div>
-            <Index number="10" label="WHAT’S NEXT?" />
-            <h2 id="future-title">
-              Different paths.
-              <br />
-              <em>One direction.</em>
-            </h2>
+            <h2 id="future-title">What I want to study</h2>
           </div>
           <p>{portfolio.future.text}</p>
         </div>
         <FutureDiagram />
-        <div className="build-word" aria-hidden="true">
-          BUILD<span>.</span>
-        </div>
         <div className="university-heading">
-          <span className="mono">INSTITUTIONS OF INTEREST</span>
-          <p>
-            Possible destinations for the next chapter.
-            <br />
-            Interests, not admission or affiliation.
-          </p>
+          <span className="mono">Universities I’m considering</span>
+          <p>These are university interests, not admissions or affiliations.</p>
         </div>
         <div className="universities">
           {portfolio.universities.map((u) => (
@@ -883,13 +798,7 @@ export function PortfolioExperience() {
         aria-labelledby="contact-title"
         tabIndex={-1}
       >
-        <Index number="11" label="LET’S KEEP THE CONVERSATION GOING" />
-        <h2 id="contact-title">
-          Thanks for
-          <br />
-          <em>exploring.</em>
-          <span>↗</span>
-        </h2>
+        <h2 id="contact-title">Contact &amp; links</h2>
         <div className="contact-bottom">
           <div>
             <strong>{portfolio.person.name}</strong>
@@ -909,7 +818,7 @@ export function PortfolioExperience() {
           </div>
         </div>
         <div className="footer-meta mono">
-          <span>BUILT WITH CURIOSITY / THAILAND</span>
+          <span>Ishan Dubey · Thailand</span>
           <button
             type="button"
             aria-pressed={motionPaused || reduced || quick}
