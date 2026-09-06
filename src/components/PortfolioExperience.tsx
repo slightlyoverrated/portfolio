@@ -1,512 +1,932 @@
-'use client';
-
-import { useEffect, useMemo, useRef, useState } from 'react';
+/* oxlint-disable next/no-img-element -- Static Vite site: local, lazy-loaded images require no Next image server. */
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowUpRight,
-  Bell,
-  Box,
-  BrainCircuit,
   Check,
-  ChevronRight,
-  CircleUserRound,
-  Command as CommandIcon,
-  Cpu,
-  Download,
-  FileArchive,
-  FileCode2,
   FileText,
-  Folder,
-  FolderOpen,
-  GitCommitHorizontal,
-  Globe2,
-  GraduationCap,
-  Link2,
-  Mail,
-  Mic,
-  PackageCheck,
-  ReceiptText,
-  RefreshCw,
-  Save,
-  ShieldCheck,
-  ShoppingBag,
-  Sparkles,
-  TerminalSquare,
-  Trophy,
-  Truck,
+  Menu,
+  Minus,
+  Plus,
   X,
-  Zap,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from '@/components/ui/command';
 import { portfolio } from '@/src/data/portfolio';
 import { usePortfolioMotion } from '@/src/hooks/usePortfolioMotion';
 import { useReducedMotion } from '@/src/hooks/useReducedMotion';
+import {
+  FutureDiagram,
+  HeroSchematic,
+  KrungDiagram,
+  OrderFlowDiagram,
+  StatementMotif,
+  SubjectDiagram,
+} from './EngineeringDiagrams';
 
 const sections = [
-  ['hello', 'Hello'],
-  ['about', 'About'],
-  ['statement', 'Statement'],
-  ['experience', 'Experience'],
-  ['projects', 'Projects'],
+  ['overview', 'Overview'],
   ['academics', 'Academics'],
-  ['future', 'Next'],
+  ['statement', 'Personal Statement'],
+  ['projects', 'Projects'],
+  ['experience', 'Experience'],
+  ['activities', 'Activities'],
+  ['community', 'Community'],
+  ['future', 'Future / Contact'],
 ] as const;
+const discovered = import.meta.glob<string>(
+  '../assets/community-service/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
+  { eager: true, query: '?url', import: 'default' },
+);
+const photos = Object.entries(discovered)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([path, url]) => ({ name: path.split('/').pop()!, url }));
+const explicitPhotos = new Set(
+  portfolio.community.map((item) => item.image).filter(Boolean),
+);
+const unassigned = photos.filter((photo) => !explicitPhotos.has(photo.name));
+let autoPhotoIndex = 0;
+const communityItems = portfolio.community.map((item) => ({
+  ...item,
+  photo: item.image
+    ? photos.find((photo) => photo.name === item.image)
+    : unassigned[autoPhotoIndex++],
+}));
+const extraPhotos = unassigned.slice(autoPhotoIndex);
+const assetUrl = (path: string) =>
+  `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+const statementWords = portfolio.personalStatement
+  .join(' ')
+  .split(/\s+/).length;
 
-const flowIcons = [ShoppingBag, Link2, CircleUserRound, ReceiptText, Truck];
-
-function assetUrl(path: string) {
-  return `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
-}
-
-function WindowBar({ title, dark = false }: { title: string; dark?: boolean }) {
+function Index({ number, label }: { number: string; label: string }) {
   return (
-    <div className={`window-bar${dark ? ' window-bar-dark' : ''}`}>
-      <div className="window-dots" aria-hidden="true"><i /><i /><i /></div>
-      <span>{title}</span>
-      <span className="window-status">ISHAN.OS</span>
+    <p className="section-index mono">
+      <span>{number}</span>
+      <i />
+      {label}
+    </p>
+  );
+}
+function SkillItem({ name, evidence }: { name: string; evidence: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <button
+      type="button"
+      className="skill-item"
+      aria-expanded={open}
+      onClick={() => setOpen(!open)}
+      onBlur={() => setOpen(false)}
+    >
+      {name}
+      <span className={`skill-evidence ${open ? 'visible' : ''}`}>
+        {evidence}
+      </span>
+    </button>
+  );
+}
+function Links() {
+  return (
+    <div className="contact-links">
+      {Object.entries(portfolio.links)
+        .filter(([, url]) => url)
+        .map(([key, url]) => (
+          <a
+            key={key}
+            href={
+              key === 'email'
+                ? `mailto:${url}`
+                : url.startsWith('https:')
+                  ? url
+                  : assetUrl(url)
+            }
+            target={key === 'email' ? undefined : '_blank'}
+            rel="noreferrer"
+          >
+            {
+              (
+                {
+                  github: 'GitHub',
+                  krung: 'KRUNG',
+                  orderflow: 'OrderFlow',
+                  email: 'Email',
+                  cv: 'CV',
+                } as Record<string, string>
+              )[key]
+            }
+            <ArrowUpRight size={19} />
+          </a>
+        ))}
     </div>
   );
 }
-
-function SectionIndex({ number, label }: { number: string; label: string }) {
-  return <p className="section-index"><span>{number}</span> / {label}</p>;
+function Academics() {
+  const data = portfolio.academics;
+  return (
+    <section
+      id="academics"
+      className="academics section-pad"
+      aria-labelledby="academics-title"
+      tabIndex={-1}
+    >
+      <div className="section-heading">
+        <div>
+          <Index number="01" label="CURRENT TRAJECTORY" />
+          <h2 id="academics-title">
+            Academic <em>profile.</em>
+          </h2>
+        </div>
+        <p>
+          {portfolio.person.stage} · A Levels
+          <br />
+          {portfolio.person.school} in {portfolio.person.location}
+        </p>
+      </div>
+      <div className="subjects">
+        {data.subjects.map((s) => (
+          <article className="subject" key={s.name}>
+            <span className="mono">{s.code}</span>
+            <SubjectDiagram kind={s.diagram} />
+            <h3>{s.name}</h3>
+            <p>{s.description}</p>
+            <span className="subject-connection">
+              <i />
+              {s.connection}
+            </span>
+          </article>
+        ))}
+      </div>
+      <div className="academic-convergence">
+        <span className="mono">THREE WAYS OF THINKING</span>
+        <span className="convergence-line" />
+        <span>{data.destinations.join(' / ')}</span>
+      </div>
+      <div className="academic-record">
+        <div className="igcse-record">
+          <div className="record-heading">
+            <h3>IGCSE results</h3>
+            <span className="mono">{data.igcse.length} SUBJECTS</span>
+          </div>
+          <dl className="grades">
+            {data.igcse.map((r) => (
+              <div key={r.subject}>
+                <dt>{r.subject}</dt>
+                <dd>{r.grade}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div className="as-record">
+          <div className="record-heading">
+            <h3>AS record</h3>
+            <span className="mono">FIRST SITTING</span>
+          </div>
+          <dl className="grades">
+            {data.aLevels.map((r) => (
+              <div key={r.subject}>
+                <dt>{r.subject}</dt>
+                <dd>{r.grade}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="trajectory-note">
+            <span className="mono">ACADEMIC TRAJECTORY</span>
+            <p>{data.trajectory}</p>
+          </div>
+        </div>
+        <div className="exam-record">
+          <div>
+            <span className="mono">SAT / CONFIRMED</span>
+            <strong>
+              {data.exams.sat.total}
+              <small>/ 1600</small>
+            </strong>
+            <p>
+              Math {data.exams.sat.math}
+              <br />
+              Reading &amp; Writing {data.exams.sat.readingWriting}
+            </p>
+          </div>
+          <div>
+            <span className="mono">IELTS</span>
+            <h3>{data.exams.ielts.score ?? data.exams.ielts.status}</h3>
+          </div>
+        </div>
+      </div>
+      <ol className="academic-path">
+        {data.path.map((p, i) => (
+          <li key={p} className={i === 2 ? 'current' : ''}>
+            <span>
+              {i < 2 ? <Check size={12} /> : String(i + 1).padStart(2, '0')}
+            </span>
+            {p}
+            {i === 2 && <small>NOW</small>}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 }
 
-function LogoMark() {
-  return <span className="wordmark-mark" aria-hidden="true"><i /><i /></span>;
+function Statement({ staticMode }: { staticMode: boolean }) {
+  const [full, setFull] = useState(false);
+  return (
+    <section
+      id="statement"
+      className={`statement section-pad ${full ? 'statement-full' : ''}`}
+      aria-labelledby="statement-title"
+      tabIndex={-1}
+    >
+      <div className="statement-layout">
+        <div className="statement-heading">
+          <Index number="02" label="THE QUESTION BEHIND THE WORK" />
+          <h2 id="statement-title">
+            Why
+            <br />
+            <em>engineering?</em>
+          </h2>
+          <p>
+            From getting things to work,
+            <br />
+            to understanding why they do.
+          </p>
+          <StatementMotif />
+          <span className="mono statement-length">
+            PERSONAL STATEMENT / {statementWords} WORDS
+          </span>
+        </div>
+        <article className="statement-paper">
+          <div className="paper-toolbar">
+            <span>
+              <FileText size={16} />
+              why_engineering.md
+            </span>
+            <button
+              type="button"
+              onClick={() => setFull(!full)}
+              aria-pressed={full}
+            >
+              {full ? 'Scroll reading' : 'Read full text'}
+              {full ? <Minus size={14} /> : <Plus size={14} />}
+            </button>
+          </div>
+          <div
+            className={`statement-prose ${staticMode || full ? 'show-all' : ''}`}
+          >
+            {portfolio.personalStatement.map((p, i) => (
+              <p className="statement-paragraph" key={p}>
+                <span className="sr-only">{p}</span>
+                <span className="paragraph-number mono" aria-hidden="true">
+                  0{i + 1}
+                </span>
+                {p.split(' ').map((word, j) => (
+                  <span className="statement-word" key={j} aria-hidden="true">
+                    {word}{' '}
+                    <span className="word-ink" aria-hidden="true">
+                      {word}{' '}
+                    </span>
+                  </span>
+                ))}
+              </p>
+            ))}
+          </div>
+          <div className="paper-footer mono">
+            <span>
+              {staticMode || full
+                ? 'FULL TEXT'
+                : 'SCROLL TO FOLLOW THE THOUGHT'}
+            </span>
+            <span>ISHAN DUBEY / PERSONAL STATEMENT</span>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function Projects() {
+  return (
+    <section
+      id="projects"
+      className="projects section-pad"
+      aria-labelledby="projects-title"
+      tabIndex={-1}
+    >
+      <div className="section-heading">
+        <div>
+          <Index number="03" label="IDEAS → WORKING SYSTEMS" />
+          <h2 id="projects-title">
+            Selected <em>work.</em>
+          </h2>
+        </div>
+        <p>
+          Ideas I tried turning
+          <br />
+          into real systems.
+        </p>
+      </div>
+      {(['orderflow', 'krung'] as const).map((key, i) => {
+        const project = portfolio.projects[key];
+        return (
+          <article
+            key={key}
+            id={`project-${key}`}
+            className={`project-case ${key}`}
+          >
+            <div className="project-top">
+              <span className="mono">
+                0{i + 1} / {project.descriptor}
+              </span>
+              {key === 'krung' && (
+                <a
+                  href={portfolio.links.krung}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  krung.news
+                  <ArrowUpRight size={17} />
+                </a>
+              )}
+            </div>
+            <div className="project-intro">
+              <div>
+                <h3>{project.name}</h3>
+                <h4>{project.summary}</h4>
+              </div>
+              <p>{project.intro}</p>
+            </div>
+            {key === 'orderflow' ? <OrderFlowDiagram /> : <KrungDiagram />}
+            <div className="case-notes">
+              {project.caseStudy.map((c, index) => (
+                <div key={c.label}>
+                  <span className="mono">
+                    0{index + 1} / {c.label}
+                  </span>
+                  <p>{c.text}</p>
+                </div>
+              ))}
+            </div>
+            <div className="project-tools">
+              <span className="mono">WORKED WITH</span>
+              {project.technology.map((t) => (
+                <span key={t}>{t}</span>
+              ))}
+            </div>
+          </article>
+        );
+      })}
+      <div className="smaller-projects">
+        {[portfolio.projects.mitra, portfolio.projects.hardware].map((p, i) => (
+          <article key={p.name}>
+            <span className="mono">
+              0{i + 3} / {p.descriptor}
+            </span>
+            <h3>
+              {p.name}
+              <span aria-hidden="true">↗</span>
+            </h3>
+            <p>{p.summary}</p>
+            <p className="project-lesson">{p.lesson}</p>
+            <div className="mini-tools">{p.technology.join(' · ')}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Community() {
+  return (
+    <section
+      id="community"
+      className="community section-pad"
+      aria-labelledby="community-title"
+      tabIndex={-1}
+    >
+      <div className="section-heading">
+        <div>
+          <Index number="08" label="PEOPLE & CONTRIBUTION" />
+          <h2 id="community-title">
+            A little beyond <em>myself.</em>
+          </h2>
+        </div>
+        <p>
+          Community service
+          <br />
+          <span className="pending-note">
+            Photographs and details to follow.
+          </span>
+        </p>
+      </div>
+      <div className="community-board">
+        {communityItems.map((item, i) => (
+          <figure className="community-frame" key={item.title}>
+            <span className="photo-tape" aria-hidden="true" />
+            {item.photo ? (
+              <img
+                src={item.photo.url}
+                alt={
+                  item.placeholder
+                    ? 'Community photograph; activity details pending'
+                    : item.description || item.title
+                }
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <div className="photo-placeholder">
+                <span className="frame-cross">+</span>
+                <span className="mono">{item.title}</span>
+                <span className="placeholder-index mono">FRAME 0{i + 1}</span>
+              </div>
+            )}
+            <figcaption>
+              <span className="mono">
+                {item.placeholder
+                  ? 'PLACEHOLDER / DETAILS PENDING'
+                  : item.date || item.organization}
+              </span>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+              {item.organization && <p>{item.organization}</p>}
+              {item.role && (
+                <p>
+                  <strong>Role:</strong> {item.role}
+                </p>
+              )}
+              {item.impact && (
+                <p>
+                  <strong>Impact:</strong> {item.impact}
+                </p>
+              )}
+            </figcaption>
+          </figure>
+        ))}
+        {extraPhotos.map((photo) => (
+          <figure className="community-frame" key={photo.name}>
+            <img
+              src={photo.url}
+              alt="Community photograph; caption pending"
+              loading="lazy"
+            />
+            <figcaption>
+              <span className="mono">DETAILS PENDING</span>
+              <h3>Community photograph</h3>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export function PortfolioExperience() {
   const root = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
-  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [quick, setQuick] = useState(false);
+  const [motionPaused, setMotionPaused] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [active, setActive] = useState('overview');
   const [progress, setProgress] = useState(0);
-  const [activeSection, setActiveSection] = useState('Hello');
-  const [terminalInput, setTerminalInput] = useState('');
-  const [terminalOutput, setTerminalOutput] = useState('Try “help” or “whoami”.');
-  const statement = useMemo(() => portfolio.personalStatement.join('\n\n'), []);
-
-  usePortfolioMotion({ root, statement, reduced });
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        setPaletteOpen((open) => !open);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
-
+  usePortfolioMotion({ root, reduced: reduced || quick || motionPaused });
   useEffect(() => {
     let frame = 0;
     const update = () => {
       frame = 0;
-      const total = document.documentElement.scrollHeight - window.innerHeight;
-      const nextProgress = total > 0 ? Math.min(100, Math.round((window.scrollY / total) * 100)) : 0;
-      setProgress(nextProgress);
-
-      const marker = window.innerHeight * 0.34;
-      let current = 'Hello';
-      for (const [id, label] of sections) {
-        const element = document.getElementById(id);
-        if (element && element.getBoundingClientRect().top <= marker) current = label;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(
+        height > 0 ? Math.min(100, (window.scrollY / height) * 100) : 0,
+      );
+      let current = 'overview';
+      for (const [id] of sections) {
+        if (
+          (document.getElementById(id)?.getBoundingClientRect().top ??
+            Infinity) <=
+          window.innerHeight * 0.35
+        )
+          current = id;
       }
-      setActiveSection(current);
-      document.title = `Ishan — ${current}`;
+      setActive(current);
     };
     const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(update);
+      if (!frame) frame = requestAnimationFrame(update);
     };
-    update();
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
     return () => {
       window.removeEventListener('scroll', onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(frame);
     };
   }, []);
-
-  const jumpTo = (id: string) => {
-    setPaletteOpen(false);
-    window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }), 30);
-  };
-
-  const runTerminal = (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-    const command = terminalInput.trim().toLowerCase();
-    const responses: Record<string, string> = {
-      help: "Try scrolling. That’s kind of the whole point.",
-      whoami: 'Ishan — student / programmer / builder',
-      projects: 'KRUNG, OrderFlow and Mitra. See ~/projects above.',
-      build: 'Good command. Still working on that one.',
+  useEffect(() => {
+    if (menu)
+      document
+        .querySelector<HTMLAnchorElement>('#section-navigation a')
+        ?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && menu) {
+        setMenu(false);
+        document.getElementById('menu-toggle')?.focus();
+      }
     };
-    setTerminalOutput(responses[command] ?? `Command not found: ${command || '…'}`);
-    setTerminalInput('');
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menu]);
+  const toggleQuick = () => {
+    setQuick(!quick);
+    setMenu(false);
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
   };
-
   return (
-    <main ref={root}>
-      <a className="skip-link" href="#about">Skip to main content</a>
-
-      <div className="boot-screen" aria-hidden="true">
-        <div className="boot-mark"><LogoMark /> ISHAN.OS</div>
-        <div className="boot-track"><span /></div>
-        <div className="boot-messages">
-          <span>Loading curiosity…</span>
-          <span>Loading questionable amounts of code…</span>
-          <span>Loading future engineer…</span>
-        </div>
+    <main
+      ref={root}
+      className={`${quick ? 'quick-view ' : ''}${reduced || motionPaused || quick ? 'motion-off' : ''}`}
+    >
+      <a className="skip-link" href="#academics">
+        Skip to academic profile
+      </a>
+      <div className="scroll-progress" aria-hidden="true">
+        <i style={{ transform: `scaleX(${progress / 100})` }} />
       </div>
-
       <header className="site-nav">
-        <a className="wordmark" href="#hello" aria-label="Ishan — back to the beginning"><LogoMark />ISHAN.OS</a>
-        <nav aria-label="Portfolio sections">
-          {sections.filter(([, label]) => ['Hello', 'About', 'Projects', 'Academics'].includes(label)).map(([id, label]) => (
-            <a className={activeSection === label ? 'active' : ''} href={`#${id}`} key={id}>{label}</a>
+        <a
+          className="wordmark"
+          href="#overview"
+          onClick={() => {
+            if (quick) toggleQuick();
+          }}
+          aria-label={`${portfolio.person.name}, overview`}
+        >
+          i<span>d</span>
+          <i />
+        </a>
+        <nav
+          id="section-navigation"
+          className={menu ? 'open' : ''}
+          aria-label="Portfolio sections"
+        >
+          {sections.map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              onClick={() => {
+                setMenu(false);
+                if (id === 'overview' && quick) toggleQuick();
+              }}
+              aria-current={active === id ? 'location' : undefined}
+            >
+              {label}
+            </a>
           ))}
         </nav>
-        <Button className="command-key" variant="outline" onClick={() => setPaletteOpen(true)} aria-label="Open command palette">
-          <CommandIcon aria-hidden="true" /><span>Ctrl K</span>
-        </Button>
-      </header>
-
-      <aside className="global-progress" aria-label={`Application explored — ${progress}%`}>
-        <span>application explored</span>
-        <div><i style={{ width: `${progress}%` }} /></div>
-        <strong>{String(progress).padStart(3, '0')}%</strong>
-      </aside>
-
-      <section className="hero" id="hello" aria-labelledby="hero-title">
-        <div className="hero-grid" aria-hidden="true" />
-        <p className="eyebrow"><Sparkles aria-hidden="true" /> Application workspace · Bangkok</p>
-        <div className="hero-copy">
-          <p className="hero-kicker">somewhere between here…</p>
-          <h1 id="hero-title">Hi, I’m <em>Ishan.</em></h1>
-          <p className="hero-role">Student. Programmer. Builder. <span>Future Engineer.</span></p>
-          <p className="hero-intro">{portfolio.person.intro}</p>
+        <div className="nav-actions">
+          <button
+            className="quick-toggle"
+            type="button"
+            aria-pressed={quick}
+            onClick={toggleQuick}
+          >
+            {quick ? <Check size={14} /> : <FileText size={14} />}
+            <span>{quick ? 'Full experience' : 'Quick View'}</span>
+          </button>
+          <button
+            id="menu-toggle"
+            className="menu-toggle"
+            type="button"
+            onClick={() => setMenu(!menu)}
+            aria-expanded={menu}
+            aria-controls="section-navigation"
+            aria-label={menu ? 'Close navigation' : 'Open navigation'}
+          >
+            {menu ? <X /> : <Menu />}
+          </button>
         </div>
-
-        <div className="destination-stage" aria-label="University destinations Ishan is interested in">
-          {portfolio.universities.map((university, index) => (
-            <figure className={`destination-card destination-${index + 1}`} key={university.short}>
-              <div className="destination-photo">
-                {/* Static Vite output serves these local files directly; no runtime image service is available or needed. */}
-                {/* oxlint-disable-next-line next/no-img-element */}
-                <img
-                  src={assetUrl(university.image)}
-                  alt={university.alt}
-                  sizes="(max-width: 560px) 58vw, (max-width: 900px) 47vw, 336px"
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                  decoding="async"
-                />
-                <span>ASPIRATION · NOT AFFILIATION</span>
-              </div>
-              <figcaption>
-                <div><span>{String(index + 1).padStart(2, '0')} · DESTINATION</span><strong>{university.short}</strong></div>
-                <p>{university.name}</p>
-                <small>{university.focus}</small>
-              </figcaption>
-            </figure>
+      </header>
+      <section
+        id="overview"
+        className="hero section-pad"
+        aria-labelledby="hero-title"
+        tabIndex={-1}
+      >
+        <div className="hero-topline mono">
+          <span>PERSONAL PORTFOLIO / ENGINEERING & COMPUTING</span>
+          <span>
+            <i className="status-dot" />
+            {portfolio.person.stage} · {portfolio.person.location}
+          </span>
+        </div>
+        <div className="hero-main">
+          <div className="hero-copy">
+            <p className="hero-pretitle">Curiosity, put to work.</p>
+            <h1 id="hero-title">
+              <span>{portfolio.person.firstName}</span>
+              <span>
+                {portfolio.person.lastName}
+                <i>.</i>
+              </span>
+            </h1>
+            <p className="hero-role">{portfolio.person.role}</p>
+            <p className="hero-mobile-subjects">
+              {portfolio.academics.subjects.map((s) => s.name).join(' · ')}
+            </p>
+            <p className="hero-intro">{portfolio.person.intro}</p>
+            <div className="hero-ctas">
+              <a className="primary-link" href="#projects">
+                View projects
+                <ArrowUpRight size={18} />
+              </a>
+              <a className="text-link" href="#academics">
+                Academic profile
+                <ArrowDown size={16} />
+              </a>
+            </div>
+          </div>
+          <HeroSchematic />
+        </div>
+        <div className="hero-bottom">
+          <div>
+            <span className="mono">CURRENTLY STUDYING</span>
+            <p>{portfolio.academics.subjects.map((s) => s.name).join(' · ')}</p>
+          </div>
+          <p>{portfolio.person.direction}</p>
+          <a href="#academics" aria-label="Explore portfolio">
+            <ArrowDown />
+          </a>
+        </div>
+      </section>
+      {quick && (
+        <aside className="quick-banner">
+          <span>
+            <Check size={17} />
+            Admissions Quick View
+          </span>
+          <p>
+            Complete academic record, statement, projects and achievements.
+            Motion is paused.
+          </p>
+          <button type="button" onClick={() => window.print()}>
+            Print / save PDF
+            <ArrowUpRight size={15} />
+          </button>
+        </aside>
+      )}
+      <Academics />
+      <Statement staticMode={reduced || quick || motionPaused} />
+      <Projects />
+      <section
+        id="journey"
+        className="journey section-pad"
+        aria-labelledby="journey-title"
+      >
+        <div className="journey-heading">
+          <Index number="04" label="ACADEMIC & TECHNICAL JOURNEY" />
+          <h2 id="journey-title">
+            One question
+            <br />
+            leads to <em>another.</em>
+          </h2>
+          <p>
+            From small programming problems
+            <br />
+            to the systems behind them.
+          </p>
+          <a className="text-link" href="#academics">
+            Current academic record
+            <ArrowUpRight size={16} />
+          </a>
+        </div>
+        <ol className="timeline">
+          {portfolio.timeline.map((item, i) => (
+            <li key={item.title}>
+              <span className="timeline-node">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className="mono">{item.tag}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section
+        id="experience"
+        className="experience section-pad"
+        aria-labelledby="experience-title"
+        tabIndex={-1}
+      >
+        <div className="section-heading">
+          <div>
+            <Index number="05" label="EXPERIENCE & ACHIEVEMENTS" />
+            <h2 id="experience-title">
+              Practice. Progress.
+              <br />
+              <em>A few milestones.</em>
+            </h2>
+          </div>
+          <span className="achievement-stamp" aria-hidden="true">
+            LEARN
+            <br />
+            BY
+            <br />
+            DOING ↗
+          </span>
+        </div>
+        <div className="achievement-list">
+          {portfolio.achievements.map((a, i) => (
+            <article key={a.title}>
+              <span className="mono">0{i + 1}</span>
+              <span className="achievement-type mono">{a.type}</span>
+              <h3>{a.title}</h3>
+              <p>{a.detail}</p>
+            </article>
           ))}
         </div>
-
-        <div className="hero-tags" aria-label="Areas of interest">
-          {['Bangkok', 'Engineering', 'AI', 'Robotics', 'Computer Engineering'].map((tag) => <span key={tag}>{tag}</span>)}
-        </div>
-        <p className="hero-outro">…and whatever I build next.</p>
-        <a className="scroll-cue" href="#about"><span>Scroll to explore</span><ArrowDown aria-hidden="true" /></a>
       </section>
-
-      <section className="about-section" id="about" aria-labelledby="about-title">
-        <div className="desktop-icons" aria-hidden="true">
-          <div><Folder /><span>ideas</span></div>
-          <div><FileCode2 /><span>build.py</span></div>
-          <div><RefreshCw /><span>try_again</span></div>
-        </div>
-        <div className="about-file app-window">
-          <WindowBar title="ishan_about_me.txt" />
-          <div className="about-window-body">
-            <div className="file-meta">
-              <FileText aria-hidden="true" />
-              <span>LAST MODIFIED: CONTINUOUSLY</span>
-            </div>
-            <SectionIndex number="01" label="WHO IS THIS?" />
-            <h2 id="about-title">I turn ideas into <em>working systems.</em></h2>
-            <div className="bio-columns">
-              {portfolio.person.bio.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            </div>
-            <div className="about-status"><span className="status-light" /> Current mode: learning by building</div>
+      <section
+        id="toolkit"
+        className="toolkit section-pad"
+        aria-labelledby="toolkit-title"
+      >
+        <div className="section-heading">
+          <div>
+            <Index number="06" label="THINGS I’VE WORKED WITH" />
+            <h2 id="toolkit-title">
+              Technical <em>toolkit.</em>
+            </h2>
           </div>
+          <p>
+            Tools become more interesting
+            <br />
+            when they connect to a project.
+          </p>
         </div>
+        <div className="toolkit-layers">
+          {portfolio.skills.map((group) => (
+            <article key={group.group}>
+              <div>
+                <span className="mono">{group.layer}</span>
+                <h3>{group.group}</h3>
+              </div>
+              <div className="skill-items">
+                {group.items.map((s) => (
+                  <SkillItem key={s.name} name={s.name} evidence={s.evidence} />
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+        <p className="toolkit-hint mono">
+          HOVER OR FOCUS A TOOL TO SEE WHERE IT CONNECTS.
+        </p>
       </section>
-
-      <section className="statement-section" id="statement" aria-labelledby="statement-title">
-        <div className="statement-pin">
-          <div className="statement-window app-window">
-            <WindowBar title="why_engineering.md" />
-            <div className="editor-layout">
-              <aside aria-hidden="true"><span>EXPLORER</span><p><ChevronRight /> application</p><p className="selected"><FileText /> why_engineering.md</p><p><FileText /> curiosity.log</p><p><Folder /> systems</p></aside>
-              <article>
-                <div className="editor-tabs"><span><FileText /> why_engineering.md <X /></span></div>
-                <div className="editor-breadcrumb">application <ChevronRight /> writing <ChevronRight /> why_engineering.md</div>
-                <h2 id="statement-title"><span>#</span> Why engineering?</h2>
-                <p className="statement-text" aria-label={statement} />
-                <span className="typing-caret" aria-hidden="true" />
-              </article>
-            </div>
-            <footer className="editor-status"><span><GitCommitHorizontal /> main*</span><span><Check /> scroll-synced</span><span>0% written</span></footer>
+      <section
+        id="activities"
+        className="activities section-pad"
+        aria-labelledby="activities-title"
+        tabIndex={-1}
+      >
+        <div className="section-heading">
+          <div>
+            <Index number="07" label="ACTIVITIES & RESPONSIBILITY" />
+            <h2 id="activities-title">
+              Beyond <em>the IDE.</em>
+            </h2>
           </div>
-          <div className="save-transition" aria-hidden="true"><Save /><span>CTRL + S</span></div>
+          <p>
+            Some lessons need
+            <br />a different kind of classroom.
+          </p>
         </div>
-      </section>
-
-      <section className="timeline-section" id="experience" aria-labelledby="experience-title">
-        <div className="section-shell timeline-shell">
-          <div className="timeline-heading">
-            <SectionIndex number="02" label="EXPERIENCE.LOG" />
-            <h2 id="experience-title">One commit<br />{' '}at a time.</h2>
-            <p>No dates invented. Just a record of how small experiments became larger systems.</p>
+        <div className="activity-layout">
+          <div className="activity-typography" aria-hidden="true">
+            <span>show up.</span>
+            <span>listen.</span>
+            <span>contribute.</span>
+            <i>↗</i>
           </div>
-          <div className="timeline-list">
-            <div className="timeline-line"><span className="timeline-fill" /></div>
-            {portfolio.timeline.map((item, index) => (
-              <article className="commit" key={item.commit}>
-                <span className="commit-node"><GitCommitHorizontal aria-hidden="true" /></span>
-                <div className="commit-top"><code>{item.commit}</code><span>{item.tag}</span></div>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-                <small>{String(index + 1).padStart(2, '0')} / {String(portfolio.timeline.length).padStart(2, '0')}</small>
+          <div className="activity-notes">
+            {portfolio.activities.map((a) => (
+              <article key={a.title}>
+                <span className="mono">{a.theme}</span>
+                <h3>{a.title}</h3>
+                <p>{a.text}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
-
-      <section className="project-index" id="projects" aria-labelledby="projects-title">
-        <SectionIndex number="03" label="PROJECTS" />
-        <div className="project-index-head">
-          <h2 id="projects-title"><code>~/projects</code></h2>
-          <p>Three folders. Two product-sized rabbit holes. Plenty of lessons.</p>
-        </div>
-        <div className="project-folders">
-          {Object.values(portfolio.projects).map((project, index) => (
-            <a href={`#project-${project.name.toLowerCase()}`} className={`project-folder folder-${index + 1}`} key={project.name}>
-              <span className="folder-back" /><span className="folder-sheet">{index === 0 ? 'case_study.pdf' : index === 1 ? 'system_flow.map' : 'assistant.py'}</span><span className="folder-front" />
-              <strong>{project.name}</strong><small>{project.descriptor}</small>
-            </a>
+      <Community />
+      <section className="outside section-pad" aria-labelledby="outside-title">
+        <span className="afk-label mono">09 / OUTSIDE THE SCREEN</span>
+        <h2 id="outside-title">{portfolio.outside.title}</h2>
+        <p>{portfolio.outside.text}</p>
+        <div className="outside-notes mono">
+          {portfolio.outside.notes.map((n) => (
+            <span key={n}>{n}</span>
           ))}
         </div>
       </section>
-
-      <section className="krung-section" id="project-krung" aria-labelledby="krung-title">
-        <div className="krung-pin">
-          <div className="krung-intro">
-            <span className="project-number">PROJECT / 01</span>
-            <h2 id="krung-title">KRUNG</h2>
-            <p>{portfolio.projects.krung.summary}</p>
+      <section
+        id="future"
+        className="future section-pad"
+        aria-labelledby="future-title"
+        tabIndex={-1}
+      >
+        <div className="section-heading">
+          <div>
+            <Index number="10" label="WHAT’S NEXT?" />
+            <h2 id="future-title">
+              Different paths.
+              <br />
+              <em>One direction.</em>
+            </h2>
           </div>
-          <div className="krung-browser app-window">
-            <div className="browser-bar">
-              <div className="window-dots"><i /><i /><i /></div>
-              <div className="browser-address"><ShieldCheck /> krung.news <RefreshCw /></div>
-              <ArrowUpRight />
-            </div>
-            <div className="krung-shot">
-              <div className="krung-shot-main krung-layer one">
-                <div className="krung-mast"><strong>KRUNG</strong><span>THAILAND, EXPLAINED.</span></div>
-                <div className="krung-story-copy"><span>THE BIG STORY</span><h3>Understand the story,<br />{' '}not just the headline.</h3><p>Context, sources and the people shaping what happens next.</p></div>
-                <div className="mock-headlines"><i /><i /><i /></div>
-              </div>
-              <div className="krung-layer two receipts-panel"><span>SOURCES / RECEIPTS</span>{[1,2,3].map((n) => <p key={n}><Check /> Source {n} verified</p>)}</div>
-              <div className="krung-label label-one">01 · CONTEXT</div>
-              <div className="krung-label label-two">02 · EVIDENCE</div>
-              <div className="krung-label label-three">03 · CLARITY</div>
-            </div>
-          </div>
-          <aside className="lessons-folder">
-            <div className="lessons-tab"><FolderOpen /> lessons_learned</div>
-            <div className="lessons-body">
-              {portfolio.projects.krung.lessons.map((lesson, index) => <p key={lesson}><span>0{index + 1}</span>{lesson}</p>)}
-              <div className="lesson-tools">{portfolio.projects.krung.learned.map((item) => <small key={item}>{item}</small>)}</div>
-            </div>
-          </aside>
+          <p>{portfolio.future.text}</p>
+        </div>
+        <FutureDiagram />
+        <div className="build-word" aria-hidden="true">
+          BUILD<span>.</span>
+        </div>
+        <div className="university-heading">
+          <span className="mono">INSTITUTIONS OF INTEREST</span>
+          <p>
+            Possible destinations for the next chapter.
+            <br />
+            Interests, not admission or affiliation.
+          </p>
+        </div>
+        <div className="universities">
+          {portfolio.universities.map((u) => (
+            <figure key={u.short}>
+              <img
+                src={assetUrl(u.image)}
+                alt={u.alt}
+                loading="lazy"
+                decoding="async"
+                width="600"
+                height="400"
+              />
+              <figcaption>
+                <span>{u.short}</span>
+                <p>{u.name}</p>
+                <small>{u.source}</small>
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </section>
-
-      <section className="orderflow-section" id="project-orderflow" aria-labelledby="orderflow-title">
-        <div className="orderflow-shell">
-          <header className="orderflow-heading">
-            <div><span className="project-number">PROJECT / 02</span><h2 id="orderflow-title">OrderFlow</h2></div>
-            <div><p>{portfolio.projects.orderflow.summary}</p><small>{portfolio.projects.orderflow.note}</small></div>
-          </header>
-          <div className="flow-system">
-            <div className="pipeline-track"><span className="pipeline-fill" /></div>
-            {portfolio.projects.orderflow.stages.map((stage, index) => {
-              const Icon = flowIcons[index];
-              return (
-                <article className="flow-node" key={stage}>
-                  <div className="flow-index">0{index + 1}</div>
-                  <div className="flow-icon"><Icon aria-hidden="true" /></div>
-                  <div><span>STATUS: {index === 4 ? 'READY' : 'PASSING'}</span><h3>{stage}</h3><p>{['Create a product with variants and inventory.', 'Share one storefront-first product link.', 'A mobile checkout designed for real customers.', 'Automatically organise the order for the seller.', 'Move clearly from paid to completed.'][index]}</p></div>
-                  <Check className="flow-check" aria-hidden="true" />
-                </article>
-              );
-            })}
-            <div className="parcel" aria-hidden="true"><Box /><span>ORD-0142</span></div>
+      <footer
+        id="contact"
+        className="contact section-pad"
+        aria-labelledby="contact-title"
+        tabIndex={-1}
+      >
+        <Index number="11" label="LET’S KEEP THE CONVERSATION GOING" />
+        <h2 id="contact-title">
+          Thanks for
+          <br />
+          <em>exploring.</em>
+          <span>↗</span>
+        </h2>
+        <div className="contact-bottom">
+          <div>
+            <strong>{portfolio.person.name}</strong>
+            <p>
+              {portfolio.person.role}
+              <br />
+              {portfolio.person.stage} · {portfolio.person.location}
+            </p>
           </div>
-          <div className="orderflow-foot">
-            <div>{portfolio.projects.orderflow.features.map((feature) => <span key={feature}>{feature}</span>)}</div>
-            <p><Zap /> What I worked with: {portfolio.projects.orderflow.technology.join(' · ')}</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mitra-section" id="project-mitra" aria-labelledby="mitra-title">
-        <div className="mitra-window">
-          <WindowBar title="Mitra Assistant — Python" dark />
-          <div className="mitra-body">
-            <aside><strong>M</strong><button aria-label="Microphone"><Mic /></button><button aria-label="Reminders"><Bell /></button><button aria-label="Quick launch"><Zap /></button></aside>
-            <article>
-              <span className="project-number">PROJECT / 03</span>
-              <h2 id="mitra-title">Hello, I’m Mitra.</h2>
-              <p>{portfolio.projects.mitra.summary}</p>
-              <div className="mitra-chat"><span>M</span><p>Small experiment. Big “what if?” energy.<i>now</i></p></div>
-              <div className="mitra-actions">{portfolio.projects.mitra.features.map((feature) => <span key={feature}>{feature}</span>)}</div>
-            </article>
+          <div>
+            <Links />
+            {!portfolio.links.email && (
+              <p className="contact-pending">
+                Contact details and CV will be added here.
+              </p>
+            )}
           </div>
         </div>
-      </section>
-
-      <section className="skills-section" aria-labelledby="skills-title">
-        <div className="skills-copy"><SectionIndex number="04" label="TOOLS I’VE WORKED WITH" /><h2 id="skills-title">What I actually do.</h2><p>No percentages. No “mastered” badges. Just tools I have used to turn ideas into systems.</p></div>
-        <div className="skills-orbit">
-          <div className="orbit-core"><Cpu /><strong>BUILD</strong><span>learn · test · repeat</span></div>
-          {portfolio.skills.flatMap((group, groupIndex) => group.items.map((item, itemIndex) => (
-            <span className={`skill-node skill-g${groupIndex + 1}`} style={{ '--index': portfolio.skills.slice(0, groupIndex).reduce((total, previous) => total + previous.items.length, 0) + itemIndex } as React.CSSProperties} key={`${group.group}-${item}`}><i />{item}</span>
-          )))}
-          <div className="skill-legend">{portfolio.skills.map((group, index) => <span key={group.group}><i className={`legend-${index + 1}`} />{group.group}</span>)}</div>
+        <div className="footer-meta mono">
+          <span>BUILT WITH CURIOSITY / THAILAND</span>
+          <button
+            type="button"
+            aria-pressed={motionPaused || reduced || quick}
+            onClick={() => setMotionPaused(!motionPaused)}
+            disabled={reduced || quick}
+          >
+            {reduced
+              ? 'Reduced motion respected'
+              : quick
+                ? 'Motion paused in Quick View'
+                : motionPaused
+                  ? 'Resume motion'
+                  : 'Pause motion'}
+          </button>
+          <a href="#overview">BACK TO TOP ↑</a>
         </div>
-      </section>
-
-      <section className="academics-section" id="academics" aria-labelledby="academics-title">
-        <div className="academic-file-icon" aria-hidden="true"><FileText /><span>academic_record.pdf</span></div>
-        <div className="academic-window app-window">
-          <WindowBar title="academic_record.pdf — verified data" />
-          <div className="academic-header">
-            <div><SectionIndex number="05" label="SYSTEM INFORMATION" /><h2 id="academics-title">Academic record.</h2></div>
-            <div className="student-chip"><span>YEAR 13</span><strong>MATHEMATICS · PHYSICS · COMPUTER SCIENCE</strong></div>
-          </div>
-          <div className="academic-grid">
-            <section>
-              <div className="record-title"><h3>IGCSE results</h3><span>7 subjects</span></div>
-              <div className="grade-grid">{portfolio.academics.igcse.map((result) => <div className="grade-block" key={result.subject}><span>{result.subject}</span><strong>{result.grade}</strong></div>)}</div>
-            </section>
-            <section className="alevel-record">
-              <div className="record-title"><h3>International A Levels</h3><span>Current AS record</span></div>
-              <div className="alevel-list">{portfolio.academics.aLevels.map((result) => <div className="grade-block current-grade" key={result.subject}><span><i />{result.subject}</span><strong>{result.grade}</strong></div>)}</div>
-              <div className="recovery-note"><RefreshCw /><p><strong>Recovery in progress.</strong>{portfolio.academics.recovery}</p></div>
-            </section>
-          </div>
-          <div className="academic-path">{portfolio.academics.path.map((step, index) => <div className={index === 2 ? 'active' : ''} key={step}><i>{index < 2 ? <Check /> : index === 2 ? <RefreshCw /> : index + 1}</i><span>{step}</span></div>)}</div>
-          <div className="testing-strip">
-            <div><span>SAT</span><strong>{portfolio.academics.exams.sat.total}</strong><small>Math {portfolio.academics.exams.sat.math} · R&amp;W {portfolio.academics.exams.sat.readingWriting}</small></div>
-            <div><span>IELTS</span><strong>—</strong><small>{portfolio.academics.exams.ielts.status}</small></div>
-            <div className="academic-connect"><span>MATHEMATICS + PHYSICS + CS</span><ChevronRight /><strong>ENGINEERING · AI · ROBOTICS</strong></div>
-          </div>
-        </div>
-      </section>
-
-      <section className="achievements-section" aria-labelledby="achievements-title">
-        <div className="archive-shell">
-          <div className="archive-title"><FileArchive /><div><SectionIndex number="06" label="ARCHIVE" /><h2 id="achievements-title">achievements.zip</h2><p>Credible by design. No inflated participation. No invented metrics.</p></div><span>DECOMPRESSING…</span></div>
-          <div className="archive-items">{portfolio.achievements.map((item, index) => <article key={item.title}><div className="archive-icon">{index === 0 ? <Trophy /> : index === 1 ? <FileText /> : index === 2 ? <BrainCircuit /> : index === 3 ? <GraduationCap /> : <FileCode2 />}</div><span>{item.type}</span><h3>{item.title}</h3><p>{item.detail}</p></article>)}</div>
-        </div>
-      </section>
-
-      <section className="offline-section" aria-labelledby="offline-title">
-        <div className="offline-heading"><span>ESC</span><h2 id="offline-title">offline.exe</h2><p>Because not every useful lesson happens behind a screen.</p></div>
-        <div className="scrapbook">
-          {portfolio.offline.map((item, index) => <article className={`scrap scrap-${index + 1}`} key={item.label}><div className="scrap-tape" /><div className="personal-placeholder"><span>PERSONAL PHOTO SLOT</span></div><strong>{item.label}</strong><p>{item.text}</p></article>)}
-          <div className="scrap-sticker sticker-one">AFK,<br />still learning.</div>
-          <div className="scrap-sticker sticker-two">THAILAND<br />→ WORLD</div>
-        </div>
-      </section>
-
-      <section className="values-section" aria-label="Ishan's values">
-        {portfolio.values.map((value, index) => <article className={`value-statement value-${index + 1}`} key={value.title}><span>0{index + 1}</span><h2>{value.title}</h2><p>{value.text}</p></article>)}
-      </section>
-
-      <section className="future-section" id="future" aria-labelledby="future-title">
-        <div className="future-heading"><SectionIndex number="07" label="/NEXT" /><h2 id="future-title">Different paths.<br />{' '}<em>One direction.</em></h2><p>{portfolio.future.question}</p></div>
-        <div className="future-map">
-          <svg aria-hidden="true" viewBox="0 0 1000 660" preserveAspectRatio="none">
-            <path className="future-route route-1" pathLength="1" d="M25 80 C 230 80, 180 330, 500 330 S 760 330, 970 330" />
-            <path className="future-route route-2" pathLength="1" d="M25 200 C 250 200, 240 330, 500 330" />
-            <path className="future-route route-3" pathLength="1" d="M25 330 L 500 330 L 970 330" />
-            <path className="future-route route-4" pathLength="1" d="M25 460 C 250 460, 240 330, 500 330" />
-            <path className="future-route route-5" pathLength="1" d="M25 580 C 230 580, 180 330, 500 330" />
-            <circle cx="500" cy="330" r="16" />
-          </svg>
-          <div className="future-labels">{portfolio.future.paths.map((path, index) => <span style={{ '--row': index } as React.CSSProperties} key={path}><i />{path}</span>)}</div>
-          <div className="future-destination"><span>destination</span><strong>SYSTEMS THAT MATTER</strong></div>
-        </div>
-        <div className="build-word">BUILD.</div>
-      </section>
-
-      <footer className="final-section" aria-labelledby="final-title">
-        <div className="final-window app-window">
-          <WindowBar title="application_complete.app" />
-          <div className="final-body">
-            <div className="complete-icon"><Check /></div>
-            <p>APPLICATION SUCCESSFULLY EXPLORED · NO INSTALLATION REQUIRED</p>
-            <h2 id="final-title">Thanks for<br />{' '}<em>exploring.</em></h2>
-            <div className="final-person"><strong>Ishan</strong><span>Student · Programmer · Builder</span></div>
-            <div className="final-links">
-              {portfolio.links.github && <a href={portfolio.links.github} target="_blank" rel="noreferrer"><FileCode2 />GitHub<ArrowUpRight /></a>}
-              <a href={portfolio.links.krung} target="_blank" rel="noreferrer"><Globe2 />KRUNG<ArrowUpRight /></a>
-              {portfolio.links.orderflow && <a href={portfolio.links.orderflow} target="_blank" rel="noreferrer"><PackageCheck />OrderFlow<ArrowUpRight /></a>}
-              {portfolio.links.email && <a href={`mailto:${String(portfolio.links.email)}`}><Mail />Email<ArrowUpRight /></a>}
-              {portfolio.links.cv && <a href={portfolio.links.cv}><Download />CV / PDF<ArrowUpRight /></a>}
-            </div>
-            {Object.values(portfolio.links).filter(Boolean).length < 3 && <p className="link-placeholder-note">More links can be added from <code>src/data/portfolio.ts</code>.</p>}
-          </div>
-        </div>
-        <div className="tiny-terminal">
-          <div><TerminalSquare /><span>tiny_terminal</span><i /><i /><i /></div>
-          <p>{terminalOutput}</p>
-          <form onSubmit={runTerminal}><label htmlFor="terminal-command">ishan@portfolio ~ %</label><input id="terminal-command" value={terminalInput} onChange={(event) => setTerminalInput(event.target.value)} autoComplete="off" aria-label="Enter a tiny terminal command" /><Button type="submit" size="xs" className="terminal-run">Run</Button></form>
-        </div>
-        <div className="footer-meta"><span>ISHAN.OS © 2026</span><a href="#hello">Back to top <ArrowDown /></a><span>BUILT IN THAILAND</span></div>
       </footer>
-
-      <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen} title="Jump through Ishan's application" description="Choose a portfolio section">
-        <Command className="portfolio-command">
-          <CommandInput placeholder="Where should we go?" />
-          <CommandList>
-            <CommandEmpty>No section found.</CommandEmpty>
-            <CommandGroup heading="Application map">
-              {sections.map(([id, label], index) => (
-                <CommandItem key={id} value={label} onSelect={() => jumpTo(id)}>
-                  <span className="command-number">{String(index + 1).padStart(2, '0')}</span>
-                  {label}
-                  <CommandShortcut>↵</CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </CommandDialog>
     </main>
   );
 }
