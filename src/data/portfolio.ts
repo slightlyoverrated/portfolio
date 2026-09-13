@@ -71,7 +71,7 @@ export const portfolio = {
     ],
     exams: {
       sat: { total: 1250, math: 630, readingWriting: 620 },
-      ielts: { status: 'Awaiting result', score: null as number | null },
+      ielts: { status: 'Band 8.5', score: null as number | null },
     },
     destinations: ['Computer Engineering', 'AI', 'Robotics'],
   },
